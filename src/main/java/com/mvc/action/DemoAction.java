@@ -19,10 +19,10 @@ public class DemoAction {
 
     @MyRequestMapping("/query")
     public void query(HttpServletRequest req, HttpServletResponse resp, @MyRequestParam("name") String name){
-        String result = demoService.get(name);
+//        String result = demoService.get(name);
         String result2 = "My name is " + name;
         try {
-            resp.getWriter().write(result);
+            resp.getWriter().write(result2);
         } catch (IOException e) {
             e.printStackTrace();
         }
