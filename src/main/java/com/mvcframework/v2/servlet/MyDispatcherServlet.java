@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -62,7 +63,7 @@ public class MyDispatcherServlet extends HttpServlet {
         Map<String, String[]> paramterMap = req.getParameterMap();
         //保存赋值参数的位置
         Object[] paramValues = new Object[parameterTypes.length];
-        //根据参数位置动态赋值
+        //根据参数位置动态赋值。形参和实参对应起来。
         for (int i=0; i < parameterTypes.length; i++){
              Class parameterType = parameterTypes[i];
              if(parameterType == HttpServletRequest.class){
@@ -71,12 +72,32 @@ public class MyDispatcherServlet extends HttpServlet {
              } else if(parameterType == HttpServletResponse.class){
                  paramValues[i] = resp;
                  continue;
-             } else if (parameterType == String.class){
-                 MyRequestParam requestParam = (MyRequestParam) parameterType.getAnnotation(MyRequestParam.class);
-                 if(paramterMap.containsKey(requestParam.value())){
-                     for(Map.Entry<String, String[]> param: paramterMap.entrySet()){
-                         String value = Arrays.toString(param.getValue()).replaceAll("\\[|\\]","").replaceAll("\\s",",");
-                         paramValues[i] = value;
+             }
+//                 MyRequestParam requestParam = (MyRequestParam) parameterType.getAnnotation(MyRequestParam.class);
+//                 if(paramterMap.containsKey(requestParam.value())){
+//                     for(Map.Entry<String, String[]> param: paramterMap.entrySet()){
+//                         String value = Arrays.toString(param.getValue()).replaceAll("\\[|\\]","").replaceAll("\\s",",");
+//                         paramValues[i] = value;
+//                     }
+//                 }
+             //获取方法上有注解的参数名称
+             Annotation[][] annotations = method.getParameterAnnotations();
+             for (int j = 0; j <annotations.length ; j++) {
+                 for (Annotation a : annotations[j]) {
+                     if(a instanceof MyRequestParam){
+                         //参数名称
+                         String paramName = ((MyRequestParam) a).value();
+                         //与url中的参数进行匹配
+                         if(paramterMap.containsKey(paramName)){
+                             //url中的参数值，一个参数名可以有多个参数值，所以paramterMap.get(paramName)是数组
+                             //这里将参数处理为String类型是为了简化写死的，实际可能是其他类型。
+                             String value = Arrays.toString(paramterMap.get(paramName))
+                                     .replaceAll("\\[|\\]", "")
+                                     .replaceAll("\\s", ",");
+
+                             //类型强制转换
+                             paramValues[i] = convert(parameterType, value);
+                         }
                      }
                  }
              }
@@ -86,6 +107,18 @@ public class MyDispatcherServlet extends HttpServlet {
         String beanName = toLowerFirstCase(method.getDeclaringClass().getSimpleName());
         //第一个参数：方法所在的实例，第二个参数：调用时所需要的实参
         method.invoke(ioc.get(beanName), paramValues);
+    }
+
+    //url传的参数都是string类型，因为http是基于字符串的协议
+    //把String转换成Integer
+    private Object convert(Class<?> type, String value){
+        if(Integer.class == type) {
+            return Integer.valueOf(value);
+        }
+        //double类型转换
+        //其他类型转换
+        //考虑使用策略模式优化很多的if else
+        return value;
     }
 
     //初始化阶段

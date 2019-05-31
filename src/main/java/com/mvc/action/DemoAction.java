@@ -31,6 +31,10 @@ public class DemoAction {
     @MyRequestMapping("/add")
     public void add(HttpServletRequest req, HttpServletResponse resp, @MyRequestParam("a") Integer a, @MyRequestParam("b") Integer b){
         try {
+            System.out.println("a:" + a);
+            System.out.println("b:" + b);
+            System.out.println(resp);
+            System.out.println(resp.getWriter());
             resp.getWriter().write(a + "+" + b + "=" + (a+b));
         } catch (IOException e) {
             e.printStackTrace();
