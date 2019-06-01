@@ -73,6 +73,7 @@ public class MyDispatcherServlet extends HttpServlet {
                  paramValues[i] = resp;
                  continue;
              }
+ //            // 下面parameterType.getAnnotation(MyRequestParam.class)是获取不到方法上有注解的参数名称的
 //                 MyRequestParam requestParam = (MyRequestParam) parameterType.getAnnotation(MyRequestParam.class);
 //                 if(paramterMap.containsKey(requestParam.value())){
 //                     for(Map.Entry<String, String[]> param: paramterMap.entrySet()){
@@ -96,7 +97,7 @@ public class MyDispatcherServlet extends HttpServlet {
                                      .replaceAll("\\s", ",");
 
                              //类型强制转换
-                             paramValues[i] = convert(parameterType, value);
+                             paramValues[j] = convert(parameterType, value);
                          }
                      }
                  }
