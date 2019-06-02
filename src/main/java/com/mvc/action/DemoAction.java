@@ -17,7 +17,7 @@ public class DemoAction {
     @MyAutowired
     private IDemoService demoService;
 
-    @MyRequestMapping("/query")
+    @MyRequestMapping("/query.*")
     public void query(HttpServletRequest req, HttpServletResponse resp, @MyRequestParam("name") String name){
 //        String result = demoService.get(name);
         String result2 = "My name is " + name;

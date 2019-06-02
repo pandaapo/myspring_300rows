@@ -15,6 +15,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MyDispatcherServlet extends HttpServlet {
     //保存application.properties配置文件中的内容
@@ -24,8 +26,7 @@ public class MyDispatcherServlet extends HttpServlet {
     //IOC容器
     private Map<String, Object> ioc = new HashMap<String, Object>();
     //保存url和method的对应关系
-    private Map<String, Method> handlerMapping = new HashMap<String, Method>();
-
+//    private Map<String, Method> handlerMapping = new HashMap<String, Method>();
     private List<HandlerMapping> handlerMappings = new ArrayList<HandlerMapping>();
 
     @Override
@@ -94,8 +95,9 @@ public class MyDispatcherServlet extends HttpServlet {
         String  contextPath = req.getContextPath();
         url = url.replaceAll(contextPath, "").replaceAll("/+", "/");
         for (HandlerMapping h: handlerMappings) {
-            if(h.getUrl().equals(url))
-                return h;
+            Matcher matcher = h.getUrl().matcher(url);
+            if(!matcher.matches()) continue;
+            return h;
         }
         return null;
     }
@@ -146,8 +148,9 @@ public class MyDispatcherServlet extends HttpServlet {
                 if(!method.isAnnotationPresent(MyRequestMapping.class)) continue;
                 MyRequestMapping requestMapping = method.getAnnotation(MyRequestMapping.class);
                 String url = (baseUrl + "/" + requestMapping.value()).replaceAll("/+","/");
+                Pattern pattern = Pattern.compile(url);
 //                handlerMapping.put(url, method);
-                handlerMappings.add(new HandlerMapping(url, method, entry.getValue()));
+                handlerMappings.add(new HandlerMapping(pattern, method, entry.getValue()));
                 System.out.println("Mapped: " + url + "," + method);
             }
         }
@@ -263,7 +266,8 @@ public class MyDispatcherServlet extends HttpServlet {
     //初始化就能获得这些信息
     // 保存一个url和一个Method的关系
     private class HandlerMapping{
-        private String url;
+        //用Pattern不用String，可以让请求支持正则
+        private Pattern url;
         private Method method;
         private Object controller;
         //形参集合：参数类型数组
@@ -271,7 +275,7 @@ public class MyDispatcherServlet extends HttpServlet {
         //形参名称和位置的Map：参数的名字作为key，参数的在方法中位置作为value
         private Map<String, Integer> paramIndexMapping;
 
-        public String getUrl() {
+        public Pattern getUrl() {
             return url;
         }
 
@@ -287,7 +291,7 @@ public class MyDispatcherServlet extends HttpServlet {
             return paramTypes;
         }
 
-        public HandlerMapping(String url, Method method, Object controller) {
+        public HandlerMapping(Pattern url, Method method, Object controller) {
             this.url = url;
             this.method = method;
             this.controller = controller;
