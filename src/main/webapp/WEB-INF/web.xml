@@ -4,7 +4,8 @@
    <servlet>
        <servlet-name>mymvc</servlet-name>
        <!--<servlet-class>com.mvcframework.v1.servlet.MyDispatcherServlet</servlet-class>-->
-       <servlet-class>com.mvcframework.v2.servlet.MyDispatcherServlet</servlet-class>
+       <!--<servlet-class>com.mvcframework.v2.servlet.MyDispatcherServlet</servlet-class>-->
+       <servlet-class>com.mvcframework.v3.servlet.MyDispatcherServlet</servlet-class>
        <init-param>
            <param-name>contextConfigLocation</param-name>
            <!--为了简化，这里用properties文件代替xml文件-->
